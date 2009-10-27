@@ -14,7 +14,7 @@ context "For Cluster connection" do
     def server_info; "#{@server_ip}:#{server_port}"; end
   end
 
-  setup do
+  before(:each) do
     BDRB_CONFIG.set({:schedules=> {
         :foo_worker => { :barbar=>{:trigger_args=>"*/5 * * * * * *"}}},
       :backgroundrb=>{:port=>11008, :ip=>"0.0.0.0", :environment=> "production"},
@@ -61,11 +61,11 @@ context "For Cluster connection" do
     @cluster_connection.ivar(:disconnected_connections).size.should == 1
     @cluster_connection.backend_connections.size.should == 3
     server_infos = @cluster_connection.backend_connections.map(&:server_info)
-    server_infos.should.include "0.0.0.0:11008"
-    server_infos.should.include "localhost:11002"
-    server_infos.should.include "localhost:11003"
-    server_infos.should.not.include "localhost:11001"
-    t_conn.server_info.should.not == "localhost:11001"
+    server_infos.should include("0.0.0.0:11008")
+    server_infos.should include("localhost:11002")
+    server_infos.should include("localhost:11003")
+    server_infos.should_not include("localhost:11001")
+    t_conn.server_info.should_not == "localhost:11001"
   end
 
   specify "should discover new connections when time to discover" do
@@ -106,10 +106,11 @@ context "For single connections" do
     attr_accessor :server_ip,:server_port,:cluster_conn,:connection_status
   end
 
-  setup do
+  before(:each) do
     BDRB_CONFIG.set({:schedules=> {
         :foo_worker => { :barbar=>{:trigger_args=>"*/5 * * * * * *"}}},
-      :backgroundrb=>{:port=>11008, :ip=>"0.0.0.0", :environment=> "production"}
+        :backgroundrb =>{:port=>11008, :ip=>"0.0.0.0", :environment=> "production"},
+        
     })
 
     @cluster_connection = BackgrounDRb::ClusterConnection.new
@@ -129,7 +130,7 @@ context "For single connections" do
 end
 
 context "For memcache based result storage" do
-  setup do
+  before(:each) do
     options = { :schedules =>
       {
         :foo_worker => { :barbar=>{:trigger_args=>"*/5 * * * * * *"}}
@@ -138,8 +139,9 @@ context "For memcache based result storage" do
       {
         :port=>11008, :ip=>"0.0.0.0", :environment=> "production",:result_storage => 'memcache'
       },
-      :client => "localhost:11001,localhost:11002,localhost:11003",
-      :memcache => "10.0.0.1:11211,10.0.0.2:11211"
+	  	:memcache => "10.0.0.1:11211,10.0.0.2:11211",
+      :client => "localhost:11001,localhost:11002,localhost:11003"
+      
     }
     BDRB_CONFIG.set(options)
 
@@ -156,7 +158,7 @@ context "For memcache based result storage" do
 
 
   specify "should use memcache based result storage if specified" do
-    @cluster_connection.cache.should.not == nil
+    @cluster_connection.cache.should_not == nil
     @cluster_connection.cache.class.should == MemCache
   end
 end

@@ -8,4 +8,20 @@
     :worker_method: foobar
     :trigger_args: */5 * * * * * *
 
-
+development:
+    :ip: 127.0.0.1
+    :port: 11006
+    :persistent_disabled: true
+    :result_storage: memcache
+    :memcache: '127.0.0.0.1:11211'
+test:
+    :ip: 127.0.0.1
+    :port: 11006
+    :persistent_disabled: true
+    :result_storage: internal
+production:
+    :ip: 127.0.0.1
+    :port: 11006
+    :persistent_disabled: true
+    :result_storage: memcache
+    :memcache: 'ui0:11211,ui1:11211'

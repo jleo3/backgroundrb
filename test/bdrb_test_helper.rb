@@ -1,6 +1,6 @@
 require "rubygems"
 require "mocha"
-require "test/spec"
+require "spec"
 require "active_record"
 require "active_support"
 require "yaml"
@@ -8,9 +8,6 @@ require "erb"
 
 class BDRB_CONFIG
   @config_value = {}
-  def self.fuck
-    @config_value
-  end
   def self.set hash
     @config_value = hash
   end
@@ -18,7 +15,9 @@ class BDRB_CONFIG
     @config_value[key]
   end
 end
-
+unless defined?(BDRB_ENV)
+	BDRB_ENV = 'test'
+end
 RAILS_HOME = File.expand_path(File.join(File.dirname(__FILE__) + "/../../../..")) unless defined?(RAILS_HOME)
 PACKET_APP = RAILS_HOME + "/vendor/plugins/backgroundrb" unless defined?(PACKET_APP)
 WORKER_ROOT = RAILS_HOME + "/vendor/plugins/backgroundrb/test/workers" unless defined?(WORKER_ROOT)

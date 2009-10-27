@@ -3,10 +3,10 @@ require File.join(File.dirname(__FILE__) + "/../bdrb_test_helper")
 require File.join(File.dirname(__FILE__) + "/../bdrb_client_test_helper")
 
 context "For Actual BackgrounDRB connection" do
-  setup do
+  before(:each) do
     options = {:schedules => {
         :foo_worker => { :barbar=>{:trigger_args=>"*/5 * * * * * *"}}},
-      :backgroundrb=>{:port=>11008, :ip=>"0.0.0.0", :environment=> "production"},
+      :backgroundrb =>{:port=>11008, :ip=>"0.0.0.0", :environment=> "production"},
       :client => "localhost:11001,localhost:11002,localhost:11003"
     }
     BDRB_CONFIG.set(options)

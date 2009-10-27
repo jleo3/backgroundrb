@@ -4,13 +4,15 @@ require "mocha"
 context "Master proxy for reloadable workers" do
   ENV["RAILS_ENV"] = "production"
 
-  setup do
+  before(:each) do
     BDRB_CONFIG.set({:schedules=>
-                      {
-                        :foo_worker => { :barbar => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }},
-                        :bar_worker => { :do_job => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }}
-                      },
-                      :backgroundrb=> {:log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"}
+                      { :foo_worker => { :barbar => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }},
+                        :bar_worker => { :do_job => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }} },
+                     :backgroundrb =>  { :log => "foreground", 
+                                         :debug_log => false, 
+                                         :environment => "production", 
+                                         :port => 11006, 
+                                         :ip => "localhost"}
                     })
 
     Packet::Reactor.stubs(:run)
@@ -18,18 +20,17 @@ context "Master proxy for reloadable workers" do
   end
 
   specify "should load schedule of workers which are reloadable" do
-    @master_proxy.reloadable_workers.should.not == []
-    @master_proxy.reloadable_workers.should.include(BarWorker)
-    @master_proxy.reloadable_workers.should.include(FooWorker)
-    @master_proxy.worker_triggers.should.not.be {}
-    assert @master_proxy.worker_triggers.keys.include?(:bar_worker)
-    assert @master_proxy.worker_triggers[:bar_worker].keys.include?(:do_job)
+    @master_proxy.reloadable_workers.should_not == []
+    @master_proxy.reloadable_workers.should include(BarWorker)
+    @master_proxy.reloadable_workers.should include(FooWorker)
+    @master_proxy.worker_triggers.should_not == {}
+    @master_proxy.worker_triggers.keys.should include(:bar_worker)
+    @master_proxy.worker_triggers[:bar_worker].keys.should include(:do_job)
 
-    @master_proxy.worker_triggers[:bar_worker][:do_job].should.not.be { }
+    @master_proxy.worker_triggers[:bar_worker][:do_job].should_not == { }
   end
 
   specify "load schedule should load schedule of worker specified" do
-    sleep(5)
     sheep = mock()
     sheep.expects(:send_request).at_most(4)
     live_workers = Hash.new(sheep)
@@ -41,7 +42,6 @@ context "Master proxy for reloadable workers" do
   end
 
   specify "should not run worker methods which are not ready to run" do
-    sleep(1)
     sheep = mock()
     sheep.expects(:send_request).at_most(4)
     live_workers = Hash.new(sheep)

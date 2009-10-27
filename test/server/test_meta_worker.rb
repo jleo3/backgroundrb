@@ -9,13 +9,13 @@ context "A Meta Worker should" do
       t.length.to_s.rjust(9,'0') + t
     end
   end
-  setup do
+  before(:each) do
     options = {:schedules =>
       {
         :proper_worker => { :barbar => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }},
         :bar_worker => { :do_job => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }}
       },
-      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"}
+      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "test", :port => 11006, :ip => "localhost"}
     }
     BDRB_CONFIG.set(options)
 
@@ -41,15 +41,15 @@ context "A Meta Worker should" do
   specify "load appropriate db environment from config file" do
     ENV["RAILS_ENV"] = BDRB_CONFIG[:backgroundrb][:environment]
     @meta_worker.send(:load_rails_env)
-    ActiveRecord::Base.connection.current_database.should == "rails_sandbox_production"
+    ActiveRecord::Base.connection.current_database.should == "aws2_test"
   end
 
 
   specify "load appropriate schedule from config file" do
-    @meta_worker.my_schedule.should.not == nil
+    @meta_worker.my_schedule.should_not == nil
     @meta_worker.my_schedule.should == {:barbar=>{:data=>"Hello World", :trigger_args=>"*/5 * * * * *"}}
     trigger = @meta_worker.ivar(:worker_method_triggers)
-    trigger.should.not == nil
+    trigger.should_not == nil
     trigger[:barbar][:data].should == "Hello World"
   end
 
@@ -120,7 +120,6 @@ context "A Meta Worker should" do
     end
     b = {:data=>{:worker_method=>"baz", :arg=>"rails"}, :type=>:request, :result=>true, :client_signature=>9}
     a = @meta_worker.receive_internal_data(packet_dump(b))
-    p a
     Thread.current[:job_key].should == nil
   end
 end
@@ -141,7 +140,7 @@ context "For unix schedulers" do
       },
       :backgroundrb =>
       {
-        :log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"
+        :log => "foreground", :debug_log => false, :environment => "test", :port => 11006, :ip => "localhost"
       }
     }
     BDRB_CONFIG.set(options)
@@ -161,9 +160,9 @@ context "For unix schedulers" do
       end
     end
     @meta_worker = UnixWorker.start_worker
-    @meta_worker.my_schedule.should.not == nil
-    @meta_worker.ivar(:worker_method_triggers).should.not == nil
-    @meta_worker.ivar(:worker_method_triggers)[:barbar].should.not == nil
+    @meta_worker.my_schedule.should_not == nil
+    @meta_worker.ivar(:worker_method_triggers).should_not == nil
+    @meta_worker.ivar(:worker_method_triggers)[:barbar].should_not == nil
   end
 end
 
@@ -174,7 +173,7 @@ context "Worker without names" do
         :foo_worker => { :barbar => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }},
         :bar_worker => { :do_job => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }}
       },
-      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"}
+      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "test", :port => 11006, :ip => "localhost"}
     }
     BDRB_CONFIG.set(options)
 
@@ -189,13 +188,13 @@ context "Worker without names" do
 
       def start_reactor; end
     end
-    should.raise { @meta_worker = BoyWorker.start_worker }
+     lambda { @meta_worker = BoyWorker.start_worker }.should raise_error()
   end
 end
 
 context "Worker with options" do
   specify "should load schedule from passed options" do
-    options = { :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"}}
+    options = { :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "test", :port => 11006, :ip => "localhost"}}
     BDRB_CONFIG.set(options)
 
     BackgrounDRb::MetaWorker.worker_name = "hello_worker"
@@ -230,13 +229,13 @@ context "Worker with options" do
 end
 
 context "For enqueued tasks" do
-  setup do
+  before(:each) do
     options = {:schedules =>
       {
         :proper_worker => { :barbar => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }},
         :bar_worker => { :do_job => {:trigger_args=>"*/5 * * * * *", :data =>"Hello World" }}
       },
-      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "production", :port => 11006, :ip => "localhost"}
+      :backgroundrb => {:log => "foreground", :debug_log => false, :environment => "test", :port => 11006, :ip => "localhost"}
     }
     BDRB_CONFIG.set(options)
 
@@ -261,7 +260,7 @@ context "For enqueued tasks" do
     @meta_worker = QueueWorker.start_worker
     mocked_task = mock()
     mocked_task.expects(:worker_method).returns(:barbar).times(2)
-    mocked_task.expects(:args).returns(Marshal.dump("hello"))
+    mocked_task.expects(:args).returns(Marshal.dump("hello")).times(2)
     mocked_task.expects(:[]).returns(1).times(2)
     @meta_worker.expects(:barbar).with("hello").returns(true)
     BdrbJobQueue.expects(:find_next).with("queue_worker").returns(mocked_task)

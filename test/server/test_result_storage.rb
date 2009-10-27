@@ -1,7 +1,7 @@
 require File.join(File.dirname(__FILE__) + "/..","bdrb_test_helper")
 
 context "Result storage" do
-  setup do
+  before(:each) do
     @cache = BackgrounDRb::ResultStorage.new(:some_worker,:crap)
   end
 

@@ -8,18 +8,11 @@ require 'rake/contrib/sshpublisher'
 desc 'Default: run unit tests.'
 task :default => :test
 
-desc 'Test the backgroundrb plugin.'
-Rake::TestTask.new(:test) do |t|
-  t.libs << 'lib'
-  t.pattern = 'test/**/test_*.rb'
-  t.verbose = true
-end
-
-desc "Run all specs"
-Spec::Rake::SpecTask.new('specs') do |t|
+desc "Run all spec tests"
+Spec::Rake::SpecTask.new('spec') do |t|
   t.spec_opts = ["--format", "specdoc"]
   t.libs = ['lib', 'server/lib' ]
-  t.spec_files = FileList['specs/**/*_spec.rb']
+  t.spec_files = FileList['test/**/test_*.rb']
 end
 
 desc "RCov"

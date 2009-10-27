@@ -347,7 +347,7 @@ module BackgrounDRb
         if self.respond_to? task.worker_method
           Thread.current[:persistent_job_id] = task[:id]
           Thread.current[:job_key] = task[:job_key]
-          args = Marshal.load(task.args)
+          args = task.args ? Marshal.load(task.args) : nil
           invoke_user_method(task.worker_method,args)
         else
           task.release_job
