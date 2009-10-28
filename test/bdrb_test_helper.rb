@@ -15,9 +15,7 @@ class BDRB_CONFIG
     @config_value[key]
   end
 end
-unless defined?(BDRB_ENV)
-	BDRB_ENV = 'test'
-end
+
 RAILS_HOME = File.expand_path(File.join(File.dirname(__FILE__) + "/../../../..")) unless defined?(RAILS_HOME)
 PACKET_APP = RAILS_HOME + "/vendor/plugins/backgroundrb" unless defined?(PACKET_APP)
 WORKER_ROOT = RAILS_HOME + "/vendor/plugins/backgroundrb/test/workers" unless defined?(WORKER_ROOT)
@@ -30,5 +28,3 @@ require "packet"
 require "bdrb_config"
 
 require "backgroundrb_server"
-
-
